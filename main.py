@@ -1,4 +1,5 @@
-from Environment import Environment
+#from Environment import Environment
+from EnhancedEnvironment import EnhancedEnvironment
 from Utils import Utils
 from DecisionMaking import DecisionMaking
 import numpy as np
@@ -18,7 +19,7 @@ from Object import Object
 #     goal_map[goal_location[0], goal_location[1]] = 1
 #     return goal_map
 
-
+'''
 if __name__ == '__main__':
     utils = Utils()
     agent = DecisionMaking(params=utils.params)
@@ -39,7 +40,9 @@ if __name__ == '__main__':
                  )
     print('Making video...')
     create_video_from_plots(utils.params)
+'''
 
+    #environment = EnhancedEnvironment(params=utils.params, few_many_objects=['few', 'many'])
     # environment = Environment(params=utils.params, few_many_objects=['few', 'many'], object_reappears=False)
     # index = 0
     # each_type_object_num = [2, 2]
@@ -63,3 +66,50 @@ if __name__ == '__main__':
     #     print(environment._mental_states)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+
+if __name__ == '__main__':
+    utils = Utils()
+    agent = DecisionMaking(params=utils.params)
+    print("Checking few_many_dict:", hasattr(agent, 'few_many_dict'))  #debugg
+
+    # Define different environment conditions
+    few_many = [
+        ['few', 'few'], ['few', 'few'], ['few', 'few'], ['few', 'few'],
+        ['few', 'many'], ['few', 'many'], ['few', 'many'], ['few', 'many'],
+        ['many', 'few'], ['many', 'few'], ['many', 'few'], ['many', 'few'],
+        ['many', 'many'], ['many', 'many'], ['many', 'many'], ['many', 'many'],
+    ]
+
+    # Generate agent behavior
+    agent.generate_behavior(few_many=few_many)
+
+    # Visualization
+    print('Plotting...')
+    plot_tensors(
+        utils.params.EPISODE_NUM,
+        agent.few_many_dict,
+        agent.env_tensor,
+        agent.mental_state_tensor,
+        agent.states_params_tensor,
+        agent.episode_step_num
+    )
+
+    print('Making video...')
+    create_video_from_plots(utils.params)
+
+    # Example to manually interact with the environment
+    environment = EnhancedEnvironment(params=utils.params, few_many_objects=['few', 'many'])
+    environment.generate_random_objects(num_objects_per_type=5)
+
+    for episode in range(5):  # Run 5 example episodes
+        print(f'--- Episode {episode + 1} ---')
+        goal_map = agent.take_action(environment=environment)
+        print('Goal Map:', goal_map)
+
+        next_state, reward, done, info = environment.step(goal_map=goal_map)
+        print('Next Mental States:', environment._mental_states)
+
+        if done:
+            print('Episode finished.')
+            break
